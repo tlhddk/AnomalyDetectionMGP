@@ -101,7 +101,7 @@ while True:
         time.sleep(0.2)
         
         frame_number = frame_number + 1
-        
+        # yorum
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q') : break
     else : break
