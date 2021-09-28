@@ -16,16 +16,16 @@ import time
 path = './video_ucus_3.mp4'
 cap = cv2.VideoCapture(path)
 frame_number = 1
+
 while True:
     ret, frame = cap.read()
     if ret:
         frame_h = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
         
-        # Dış Bölge Gaussian Blur
+        # Tüm Frame Gaussian Blur
         img_g = cv2.GaussianBlur(frame_h,ksize=(7,7),sigmaX=1)
         
-        # Dış Bölge Yeşil Maskeleme
-        
+        # Tüm Frame Yeşil Maskeleme
         greenLower=(30,100,0)
         greenUpper=(70,255,255)
         frame_m = cv2.inRange(frame_h,greenLower,greenUpper)
@@ -33,14 +33,13 @@ while True:
         
         
         # Dış Bölge Erozyon ve Genişletme
-         
-        frame_masked = cv2.erode(frame_m,None,iterations=1)
-        frame_masked = cv2.dilate(frame_masked,None,iterations=2)
+        frame_masked = cv2.erode(frame_m,None,iterations=1)         # default (=None) kernel 3x3
+        frame_masked = cv2.dilate(frame_masked,None,iterations=2)   # default (=None) kernel 3x3
         
         
         
         # Dış Bölge işaretleme
-        (frame_con,contours,hierarcy) = cv2.findContours(frame_masked.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        (contours,hierarcy) = cv2.findContours(frame_masked.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         if len(contours)>0:
             
             c = max(contours,key=cv2.contourArea)
@@ -72,7 +71,7 @@ while True:
         frame_s_masked = cv2.dilate(frame_m_s,None,iterations=3)
         
         
-        (frame_con,s_contours,s_hierarcy) = cv2.findContours(frame_s_masked.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        (s_contours,s_hierarcy) = cv2.findContours(frame_s_masked.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         if len(s_contours)>0:
             
             c_s = max(s_contours,key=cv2.contourArea)
