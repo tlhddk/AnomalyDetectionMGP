@@ -3,9 +3,10 @@ import cv2
 import matplotlib.pyplot as plt
 import time
 
+#%%
 # Görüntü içe aktarım
 
-path = './Ucus6m.mp4'
+path = "C:\\Users\\subas\\Desktop\\WORKPLACE\\ANOMALY_DEDECTION\\Ucus6m.mp4"
 cap = cv2.VideoCapture(path)
 frame_number = 1
 
@@ -34,7 +35,7 @@ while True:
         
 
         # Dış Bölge işaretleme
-        (frame_contour,contours,hierarcy) = cv2.findContours(frame_dilate.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        (contours,hierarcy) = cv2.findContours(frame_dilate.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         if len(contours)>0:
             
             c = max(contours,key=cv2.contourArea)
@@ -58,7 +59,7 @@ while True:
             
             ret_gray, threshed_gray= cv2.threshold(target_area, 54, 255, cv2.THRESH_BINARY_INV)
             
-            (frame_contour_gray,contours_gray,hierarcy_gray) = cv2.findContours(threshed_gray.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            (contours_gray,hierarcy_gray) = cv2.findContours(threshed_gray.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
             
                 
             if len(contours_gray)>0:
@@ -82,11 +83,13 @@ while True:
                 cv2.drawContours(target_area,[box_gray], 0, (255,0,255),1)
                 
                 
-                rect_gray_in_image = ((up+center_gray[0],left+[center_gray[1]]),(w_gray,h_gray),rotation_gray)
-                box_gray_in_image = cv2.boxPoints(rect_gray_in_image)
-                box_gray_in_image_int = np.int64(box_gray_in_image)
-                cv2.drawContours(frame_copy,[box_gray_in_image_int], 0, (255,0,255),1)
-            
+                rect_gray_in_image = ((float(up+center_gray[0]),float(left+center_gray[1])),(w_gray,h_gray),rotation_gray)
+                try:
+                    box_gray_in_image = cv2.boxPoints(rect_gray_in_image)
+                    box_gray_in_image_int = np.int64(box_gray_in_image)
+                    cv2.drawContours(frame_copy,[box_gray_in_image_int], 0, (255,0,255),1)
+                except:
+                    pass
             
                         
             
@@ -107,3 +110,4 @@ while True:
 cap.release()
 cv2.destroyAllWindows()       
         
+# %%
