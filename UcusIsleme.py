@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 import time
 import Distance
 
-#%%
+area_inner=0
+area_outter=0
+
 # Görüntü içe aktarım
 
 path = './Ucus6m.mp4'
@@ -85,6 +87,10 @@ while True:
                 box_gray = np.int64(box_gray)
                 
                 M_gray = cv2.moments(c_gray)
+
+                area_inner = cv2.contourArea(c_gray)
+                area_outer = cv2.contourArea(c)-area_inner
+
                 try:
                     center_gray = (int(M_gray['m10']/M_gray['m00']),int(M_gray['m01']/M_gray['m00']))
                 except:
@@ -101,9 +107,9 @@ while True:
                     pass
             
                         
-            
-            
-            
+            cv2.putText(frame_copy, ' | Dis Alan: {}  | Ic Alan: {} | {}'.format(area_outer,area_inner,frame_number),(10,40),cv2.FONT_HERSHEY_TRIPLEX,0.5,(255,255,225),1)
+            cv2.circle(frame_copy,center_gray,1,(100,100,0),2)
+
 
             cv2.imshow('Tespit',frame_copy)
             cv2.imshow('Tespit Yesil',frame_dilate)
@@ -119,4 +125,3 @@ while True:
 cap.release()
 cv2.destroyAllWindows()       
         
-# %%
