@@ -1,14 +1,23 @@
+from types import MappingProxyType
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import time
+import Distance
 
 #%%
 # Görüntü içe aktarım
 
-path = "C:\\Users\\subas\\Desktop\\WORKPLACE\\ANOMALY_DEDECTION\\Ucus6m.mp4"
+path = './Ucus6m.mp4'
 cap = cv2.VideoCapture(path)
 frame_number = 1
+
+target1 = Distance.target
+print(target1.upperEdge)
+camera = Distance.Camera(76,32)
+mgp = Distance.Plane
+
+ 
 
 
 while True:
