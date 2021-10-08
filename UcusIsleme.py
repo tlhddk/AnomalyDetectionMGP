@@ -14,10 +14,13 @@ path = './Ucus6m.mp4'
 cap = cv2.VideoCapture(path)
 frame_number = 1
 
-target1 = Distance.target
-print(target1.upperEdge)
-camera = Distance.Camera(76,32)
-mgp = Distance.Plane
+target1 = Distance.Target()
+camera2  = Distance.Camera(76,32)
+print(camera2.CamFov)
+mgp     = Distance.Plane()
+mgp.setAltitude(60)
+target1.MeasureDistance(1,camera2,mgp.getAltitude())
+
 
  
 

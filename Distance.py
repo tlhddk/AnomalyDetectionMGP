@@ -28,15 +28,21 @@ class Target:
         self.coordinate.z = z
 
     def MeasureDistance(self, ratio, camera, altitude=60):
-        self.middleEdge = altitude*(1/cosd(camera.camAngle))
-        self.bottomEdge = altitude*(1/cosd(camera.CamFoV/2 - camera.camAngle))
-        self.upperEdge  = altitude*(1/cosd(camera.CamFoV/2 + camera.camAngle))
+        camFov = camera.CamFov
+        camAngle = camera.CamAngle
+        self.bottomEdge = altitude*(1/cosd(camFov / 2 - camAngle))
+        self.upperEdge  = altitude*(1/cosd(camFov / 2 + camAngle))
+        self.middleEdge = altitude*(1/cosd(camAngle))
+        
         self.UpperDistance = math.sqrt(self.upperEdge**2 - altitude**2)
         self.middleDistance = math.sqrt(self.middleEdge**2 - altitude**2)
         self.bottomDistance = math.sqrt(self.bottomEdge**2 - altitude**2)
-        self.referenceBeam = (sind(camera.CamFoV/2))*self.bottomEdge 
-        self.TotalDistance = tand(camera.CamFoV*(ratio - 0.5) + camera.camAngle)*altitude
-        return self
+        self.referenceBeam = (sind(camFov/2))*self.bottomEdge 
+        self.TotalDistance = tand(camFov*(ratio - 0.5) + camAngle)*altitude
+
+    def calculateCoordinate(self, plane):
+        self.setCoordinates(plane.x + self.TotalDistance*sind(plane.yaw), \
+            plane.y + self.TotalDistance*cosd(plane.yaw), plane.z - plane.altitude)
 
 class Camera:
 
@@ -58,6 +64,9 @@ class Camera:
 
     def getViewingAngle(self):
         return self.viewingAngle
+
+    def getCamFov(self):
+        return self.CamFov
 
 
 class Plane:
