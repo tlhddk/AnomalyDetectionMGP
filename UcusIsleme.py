@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import time
 import Distance
 
-
 # Görüntü içe aktarım
 
 path = './Ucus6m.mp4'
@@ -102,6 +101,8 @@ while True:
                 
                 cv2.drawContours(target_area,[box_gray], 0, (255,0,255),1)
                 area_inner = cv2.contourArea(c_gray)
+                area_outer = cv2.contourArea(c)
+                
                 
                 
                 try:
@@ -133,5 +134,4 @@ while True:
     else : break
 cap.release()
 cv2.destroyAllWindows()       
-        
         
