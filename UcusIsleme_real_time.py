@@ -1,11 +1,8 @@
-from types import MappingProxyType
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 import time
-import ssl
-import urllib
-import urllib.request
+from picamera import PiCamera
+from picamera.array import PiRGBArray
 
                      
 frame_number = 1                                       # Ekranda gözükecek fotoğrafın sırası.
@@ -14,16 +11,20 @@ greenUpper = (89, 250, 250)                            # Yesil Maske icin ust de
 kernel = np.ones((3,3))                                # Erozyon ve Genisletme icin kernel
 cThr=[100,100]                                         # Canny Edge icin esik degeri
 most_extensive = np.zeros((1,2)).reshape(1,2)          # En buyuk alan ve merkezinin kaydedilecegi kısım
-cap = cv2.VideoCapture(0)
+
+
+camera = PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera, size=(640, 480))
 
 
 
-
-while True:
-    ret, frame = cap.read()
-    frame = cv2.resize(frame,(400,400))
+for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     
-    if ret:
+    frame = frame_arr.array()
+    
+    if frame > 0:
         frame_copy = frame.copy()                                    # Gerçek Görüntünün Etkilenmemesi için kopyası alınır.
         
         # Resizing 
@@ -52,6 +53,8 @@ while True:
         # Canny Edge Detection
         
         img_canny = cv2.Canny(frame_blurred,cThr[0],cThr[1])
+        
+        rawCapture.truncate(0)
         
         # Dış Bölge işaretleme
         (frame_contour,contours,hierarcy) = cv2.findContours(frame_blurred.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -189,7 +192,7 @@ while True:
                     
             except:pass
             
-            try:
+a            try:
                 cv2.imshow('Tespit',frame_copy)
                 cv2.imshow('Yesil Alan',frame_green_area)
                 cv2.imshow('Kenarliklar',frame_blurred)
@@ -206,4 +209,4 @@ while True:
         if key == ord('q') : break
     else : break
 
-cv2.destroyAllWindows()       
+cv2.destroyAllWindows()  
