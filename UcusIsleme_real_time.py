@@ -22,9 +22,9 @@ rawCapture = PiRGBArray(camera, size=(640, 480))
 
 for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     
-    frame = frame_arr.array()
+    frame = frame_arr.array
     
-    if frame > 0:
+    if len(frame) > 0:
         frame_copy = frame.copy()                                    # Gerçek Görüntünün Etkilenmemesi için kopyası alınır.
         
         # Resizing 
@@ -192,7 +192,7 @@ for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_p
                     
             except:pass
             
-a            try:
+            try:
                 cv2.imshow('Tespit',frame_copy)
                 cv2.imshow('Yesil Alan',frame_green_area)
                 cv2.imshow('Kenarliklar',frame_blurred)

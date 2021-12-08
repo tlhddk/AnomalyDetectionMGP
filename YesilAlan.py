@@ -17,9 +17,9 @@ rawCapture = PiRGBArray(camera, size=(640, 480))
 
 for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     
-    frame = frame_arr.array()
+    frame = frame_arr.array
     
-    if frame > 0:
+    if len(frame) > 0:
         frame_copy = frame.copy()                                    # Gerçek Görüntünün Etkilenmemesi için kopyası alınır.
         
         # Resizing 

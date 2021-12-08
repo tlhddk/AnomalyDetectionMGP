@@ -6,8 +6,8 @@ from picamera.array import PiRGBArray
 
                      
 frame_number = 1                                       # Ekranda gözükecek fotoğrafın sırası.
-greenLower = (36,  50,  70)                            # Yesil Maske icin alt deger
-greenUpper = (89, 250, 250)                            # Yesil Maske icin ust deger
+blackLower = (0,  0, 0)                                # Yesil Maske icin alt deger
+blackUpper = (350,55,100)                               # Yesil Maske icin ust deger
 kernel = np.ones((3,3))                                # Erozyon ve Genisletme icin kernel
 cThr=[100,100]                                         # Canny Edge icin esik degeri
 most_extensive = np.zeros((1,2)).reshape(1,2)          # En buyuk alan ve merkezinin kaydedilecegi kısım
@@ -22,25 +22,21 @@ rawCapture = PiRGBArray(camera, size=(640, 480))
 
 for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     
-    frame = frame_arr.array()
+    frame = frame_arr.array
     
-    if frame > 0:
+    if len(frame) > 0:
         
         frame_copy = frame.copy()                                    # Gerçek Görüntünün Etkilenmemesi için kopyası alınır.
         
-        # Resizing 
-        frame_resize = cv2.resize(frame,(int(frame.shape[1]*1000/frame.shape[0]),720)) 
         
         # HSV Format
         frame_hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)   
         
-        # Black-White Format
-        frame_gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
         
         
-        
-        ret_gray, threshed_gray= cv2.threshold(frame_gray, 46, 255, cv2.THRESH_BINARY_INV)         # gri alan araması yap
-                    # Outer Area Erosion and Dilating
+        threshed_gray= cv2.inRange(frame_hsv, blackLower, blackUpper)         # gri alan araması yap
+                    
+        # Outer Area Erosion and Dilating
         
         frame_dilate_gray = cv2.dilate(threshed_gray,kernel,iterations=1)
         frame_erode_gray = cv2.erode(frame_dilate_gray,kernel,iterations=1)
@@ -66,9 +62,9 @@ for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_p
                 box_gray = np.int64(box_gray)
                 M_gray = cv2.moments(c_gray)
                 center_gray = (int(M_gray['m10']/M_gray['m00']),int(M_gray['m01']/M_gray['m00']))
-                center_gray_in_frame = (center_gray[0]+up,center_gray[1]+left)
                 
-                cv2.drawContours(target_area,[box_gray], 0, (255,0,255),1)
+                
+                cv2.drawContours(frame_copy,[box_gray], 0, (255,0,255),1)
                 
                 cv2.imshow('Tespit',frame_copy)
                 cv2.imshow('Siyah Alan',threshed_gray)
