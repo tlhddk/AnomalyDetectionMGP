@@ -15,6 +15,10 @@ camera.resolution = (640, 480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640, 480))
 
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out1 = cv2.VideoWriter('YesilTespit.avi',fourcc,5.0, (640,480))
+out2 = cv2.VideoWriter('YesilMaske.avi',fourcc,5.0,(640,480),0)
+
 for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     
     frame = frame_arr.array
@@ -82,9 +86,13 @@ for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_p
         
         try:
             cv2.drawContours(frame_copy,[box], 0, (0,255,255),1)
+            cv2.putText(frame_copy,'Frame Sayisi: {}'.format(frame_number),
+                        (10,40),cv2.FONT_HERSHEY_TRIPLEX,0.5,(255,255,225),1)
             cv2.imshow('Tespit',frame_copy)
             cv2.imshow('Yesil Alan',frame_green_area)
             cv2.imshow('Yesil Alan Gurultusuz',frame_blurred)
+            out1.write(frame_copy)
+            out2.write(frame_erode)
         except: pass
         
                              

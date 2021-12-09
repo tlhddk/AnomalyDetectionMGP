@@ -18,6 +18,10 @@ camera.resolution = (640, 480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640, 480))
 
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out1 = cv2.VideoWriter('SiyahTespit.avi',fourcc, 5.0, (640,480))
+out2 = cv2.VideoWriter('SiyahMaske.avi',fourcc,5.0,(640,480),0)
+
 
 
 for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -69,6 +73,8 @@ for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_p
                 cv2.imshow('Tespit',frame_copy)
                 cv2.imshow('Siyah Alan',threshed_gray)
                 cv2.imshow('Siyah Alan Gurultusuz',frame_blurred_gray)
+                out1.write(frame_copy)
+                out2.write(frame_blurred_gray)
                 
                 
         frame_number = frame_number + 1

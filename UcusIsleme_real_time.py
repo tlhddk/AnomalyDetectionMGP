@@ -18,7 +18,10 @@ camera.resolution = (640, 480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640, 480))
 
-
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out1 = cv2.VideoWriter('AlanTespit.avi',fourcc, 3.0, (640,480))
+out2 = cv2.VideoWriter('MaskeliAlan.avi',fourcc,3.0,(640,480),0)
+out3 = cv2.VideoWriter('SiyahTespit.avi',fourcc,3.0,(640,480))
 
 for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     
@@ -198,7 +201,9 @@ for frame_arr in camera.capture_continuous(rawCapture, format="bgr", use_video_p
                 cv2.imshow('Kenarliklar',frame_blurred)
                 cv2.imshow('th gray',threshed_gray)
                 cv2.imshow('Tespit Siyah',target_area)
-                time.sleep(0.2)
+                out1.write(frame_copy)
+                out2.write(frame_blurred)
+                out3.write(target_area)
             
             except:pass
         
