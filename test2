@@ -8,6 +8,8 @@ from picamera import PiCamera
 from picamera.array import PiRGBArray
 
 
+
+
 # Parameters#
 class detectionParameters:
     frame_number = 1  # Ekranda gözükecek fotoğrafın sırası.
@@ -17,13 +19,13 @@ class detectionParameters:
     cThr = [100, 100]  # Canny Edge icin esik degeri
     blackThr = 55
 class midpoint:
-    x=32.582664
-    y=40.072082
+    x=40.086243
+    y=32.579861
 searchModeInit=0
 algorithm_modes = ["Search", "Drop"]  # Algoritmanın modları
 detectionParameters_instant = detectionParameters()
 missionAlt=60
-turnRadius=60
+turnRadius=0.0001*6
 # Initialization#
 vehicle = connect('/dev/ttyS0', baud=921600, wait_ready=True)  # Connecting to vehicle
 print("Connected to vehicle!")
@@ -233,11 +235,10 @@ def directionAssignment(vehicle):
     return x,y,z
 
 def dropAssignment(midpoint):
-    x=[midpoint.x,midpoint.x,midpoint.x-12*0.0001,midpoint.x+6*0.0001,midpoint.x+6*0.0001]
-    y=[midpoint.y,midpoint.y+6*0.0001,midpoint.y,midpoint.y,midpoint.y]
+    x=[midpoint.x,midpoint.x,midpoint.x-2*turnRadius,midpoint.x-turnRadius,midpoint.x]
+    y=[midpoint.y,midpoint.y-turnRadius,midpoint.y,midpoint.y,midpoint.y]
     z=[missionAlt,missionAlt,missionAlt,missionAlt,missionAlt]
     return x,y,z
-
 
 # Infinite Loop#
 while True:
@@ -258,7 +259,8 @@ while True:
         time.sleep(5)
         mode=='Drop'
     a=midpoint()
+    time.sleep(5)
     if mode=='Drop':
-        dropAssignment(a)
+        my_x,my_y,my_z=dropAssignment(a)
 
 
