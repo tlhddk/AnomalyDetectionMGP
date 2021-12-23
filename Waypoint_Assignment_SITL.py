@@ -26,6 +26,10 @@ def download_mission():
     cmds.download()
     cmds.wait_ready() # wait until download is complete.
     print("Current mission is downloaded!")
+def midPointCoordinates(altitude):
+    width=altitude*math.tan(63*math.pi/180)*cos(53.13*pi/180)
+    height=altitude*math.tan(63*math.pi/180)*sin(53.13*pi/180)
+    return width,height
 
 def directionAssignment(vehicle):
     x=[vehicle.location.global_relative_frame.lat + turnRadius * math.cos(vehicle.heading * math.pi / 180)]
