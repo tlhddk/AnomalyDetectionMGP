@@ -1,0 +1,155 @@
+from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal, Command
+from pymavlink import mavutil
+import time
+import math
+import numpy as np
+import cv2
+from picamera import PiCamera
+from picamera.array import PiRGBArray
+
+
+
+# Parameters#
+class detectionParameters:
+    frame_number = 1  # Ekranda gözükecek fotoğrafın sırası.
+    greenLower = (36, 50, 70)  # Yesil Maske icin alt deger
+    greenUpper = (89, 255, 250)  # Yesil Maske icin ust deger
+    kernel = np.ones((3, 3))  # Erozyon ve Genisletme icin kernel
+    cThr = [100, 100]  # Canny Edge icin esik degeri
+    blackThr = 55
+
+searchModeInit=0
+algorithm_modes = ["Search", "Drop"]  # Algoritmanın modları
+detectionParameters_instant = detectionParameters()
+missionAlt=60
+turnRadius=0.0001*6
+x_init=0
+x=""
+
+# Initialization#
+vehicle = connect('/dev/ttyS0', baud=921600, wait_ready=True)  # Connecting to vehicle
+print("Connected to vehicle!")
+
+vehicle.mode = VehicleMode("MANUAL")
+
+camera = PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera, size=(640, 480))
+mode = algorithm_modes[0]
+
+#Assigning a mission to autopilot
+def mission(x, y, z):
+    """
+    Adds a takeoff command and four waypoint commands to the current mission.
+    The waypoints are positioned to form a square of side length 2*aSize around the specified LocationGlobal (aLocation).
+    The function assumes vehicle.commands matches the vehicle mission state
+    (you must have called download at least once in the session and after clearing the mission)
+    """
+
+    cmds = vehicle.commands
+
+    print(" Clear any existing commands")
+    cmds.clear()
+
+    print(" Define/add new commands.")
+    # Add new commands. The meaning/order of the parameters is documented in the Command class.
+
+    for new_point in range(len(x)):
+        point = LocationGlobal(x[new_point], y[new_point], z[new_point])
+        cmds.add(
+            Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0,
+                    0, 0, 0, 0, point.lat, point.lon, point.alt))
+
+    # Dummy ending point
+    point = LocationGlobal(x[-1], y[-1], z[-1])
+    cmds.add(
+        Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0,
+                0, 0, 0, point.lat, point.lon, point.alt))
+
+    print("Waypoints are created!")
+    print(" Upload new commands to vehicle")
+    cmds.upload()
+#Search Direction Assignment
+#####X azalıp Y de artabilir Debug Lazım!!!!!!!!!!!!!!!!
+def directionAssignment(vehicle):
+    x0=40.086243
+    y0=32.579861
+    x=[x0 + 0.01 * math.cos(vehicle.heading * math.pi / 180)]
+    y=[y0 + 0.01 * math.sin(vehicle.heading * math.pi / 180)]
+    
+    ##Gerçekte Burası Kullanılacak##
+    #x=[vehicle.location.global_relative_frame.lat + 0.01 * math.cos(vehicle.heading * math.pi / 180)]
+    #y=[vehicle.location.global_relative_frame.lon + 0.01 * math.sin(vehicle.heading * math.pi / 180)]
+    z=[60]
+    for i in range(0, 6):
+        if i == 0 or i == 5:
+            x.append(x[i] + 0.01 * math.cos(15 * math.pi / 180))
+            y.append(y[i] + 0.01 * math.cos(105 * math.pi / 180))
+            z.append(60)
+        elif i == 1 or i == 4:
+            x.append(x[i] + 0.01 * math.cos(0))
+            y.append(y[i] + 0.01 * math.sin(0))
+            z.append(60)
+        else:
+            x.append(x[i] + 0.01 * math.cos(15 * math.pi / 180))
+            y.append(y[i] + 0.01 * math.cos(75 * math.pi / 180))
+            z.append(60)
+    return x,y,z
+
+def dropAssignment(midpoint):
+    x=[midpoint.x,midpoint.x,midpoint.x-2*turnRadius,midpoint.x-turnRadius,midpoint.x]
+    y=[midpoint.y,midpoint.y-turnRadius,midpoint.y,midpoint.y,midpoint.y]
+    z=[missionAlt,missionAlt,missionAlt,missionAlt,missionAlt]
+    return x,y,z
+
+
+def dropCircle(vehicle, midpoint):
+    search_angle = 15
+    circle_alt = 60
+    turnRadius = 0.0006
+    x = [vehicle.location.global_relative_frame.lat]
+    y = [vehicle.location.global_relative_frame.lon]
+    z = [vehicle.location.global_relative_frame.alt]
+    for i in range(0, 3):
+        if i == 0:
+            x.append(x[i] + turnRadius * math.cos((vehicle.heading + 45) * math.pi / 180))
+            y.append(y[i] + turnRadius * math.sin((vehicle.heading + 45) * math.pi / 180))
+            z.append(circle_alt)
+        elif i == 1 or i == 2:
+            x.append(x[i] + turnRadius * math.cos((vehicle.heading + 90) * math.pi / 180))
+            y.append(y[i] + turnRadius * math.sin((vehicle.heading + 90) * math.pi / 180))
+            z.append(circle_alt)
+        else:
+            x.append(midpoint.x)
+            y.append(midpoint.z)
+            z.append(circle_alt)
+    
+    return x,y,z
+
+
+class midpoint:
+    x=0
+    y=0
+# Infinite Loop#
+while True:
+    if x_init==0:
+        x=input("To change the AUTO enter 1:")
+        x_init=1
+        if x=="1":
+            vehicle.mode = VehicleMode("AUTO")
+    if mode=='Search':
+        if searchModeInit==0 and vehicle.mode=='AUTO':
+            x,y,z=directionAssignment(vehicle)
+            mission(x,y,z)
+            searchModeInit=1
+        if vehicle.commands.next ==len(vehicle.commands):
+            a=midpoint()
+            a.x = vehicle.location.global_relative_frame.lat+0.0001
+            a.y = vehicle.location.global_relative_frame.lon
+            x,y,z=dropCircle(vehicle,a)
+            mission(x,y,z)
+            mode='Drop'
+        #time.sleep(5)
+    
+
